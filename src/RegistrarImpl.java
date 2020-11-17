@@ -1,3 +1,4 @@
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
@@ -59,11 +60,26 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     @Override
     public SecretKey enrollFacility(String cf) throws RemoteException {
         System.out.println("Enrolling facility");
+        System.out.println("TEST?");
         byte[] decodedKey = Base64.getDecoder().decode(cf);
-        SecretKey secretKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+        System.out.println("PIJPEN");
+        Cipher cipher = null;
+        String encoded = null;
+        try {
+            cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            SecretKey secretKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+            encoded = Base64.getEncoder().encodeToString(cipher.doFinal(cf.getBytes("UTF-8")));
+            System.out.println("KOEKE");
+            // System.out.println( Base64.getMimeEncoder().encodeToString( secretKey.getEncoded()));
+            //            System.out.println(Base64.getMimeEncoder().encodeToString( decodedKey));
 
-        System.out.println(secretKey.toString());
-        return secretKey;
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | UnsupportedEncodingException | BadPaddingException | IllegalBlockSizeException e) {
+            e.printStackTrace();
+        }
+
+
+        return encoded;
     }
 
     @Override
@@ -85,7 +101,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
             e.printStackTrace();
         }
 
-        KeySpec specs = new PBEKeySpec(cf.toCharArray(), salt, 1024);
+        KeySpec specs = new PBEKeySpec(cf.toCharArray(), salt, 1024,128);
         SecretKey key = null;
         try {
             key = kf.generateSecret(specs);
