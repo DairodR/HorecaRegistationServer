@@ -65,18 +65,18 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     @Override
     public SecretKey enrollFacility(String cf) throws RemoteException {
         System.out.println("Enrolling facility");
-        System.out.println("TEST?");
-        byte[] decodedKey = Base64.getDecoder().decode(cf);
-        System.out.println("PIJPEN");
         SecretKey secretKey= null;
         try {
-            KeyGenerator kf = KeyGenerator.getInstance("AES");
-            secretKey = kf.generateKey();
-            System.out.println("KOEKE");
-            System.out.println( Base64.getMimeEncoder().encodeToString( secretKey.getEncoded()));
-            //            System.out.println(Base64.getMimeEncoder().encodeToString( decodedKey));
+            SecureRandom r = new SecureRandom();
+            byte[] salt = new byte[8];
+            r.nextBytes(salt);
 
-        } catch (NoSuchAlgorithmException e) {
+            char[] password = cf.toCharArray();
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            KeySpec spec = new PBEKeySpec(password, salt, 65536, 256);
+             secretKey = factory.generateSecret(spec);
+            System.out.println( Base64.getMimeEncoder().encodeToString( secretKey.getEncoded()));
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             e.printStackTrace();
         }
         return secretKey;
