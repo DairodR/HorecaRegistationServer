@@ -27,6 +27,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
 
     protected RegistrarImpl() throws RemoteException {
         cateringFacilities = new ArrayList<>();
+        users = new ArrayList<>();
         KeyPairGenerator keyGen=null;
         SecureRandom random=null;
         try {
@@ -34,6 +35,10 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
             random = SecureRandom.getInstance("SHA1PRNG", "SUN");
             keyGen.initialize(1024, random);
             pair = keyGen.generateKeyPair();
+            System.out.println("pair:"+pair);
+            System.out.println("publickey:"+Base64.getEncoder().encodeToString(pair.getPublic().getEncoded()));
+            System.out.println("privatekey:"+Base64.getEncoder().encodeToString(pair.getPrivate().getEncoded()));
+
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
             e.printStackTrace();
         }
@@ -137,7 +142,10 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     @Override
     public PublicKey enrollUsers(int gsm) throws RemoteException {
         System.out.println("Enrolling user:"+gsm);
+        System.out.println(users.size());
         users.add(gsm);
+        System.out.println("pair:"+pair);
+        System.out.println("publickey:"+Base64.getEncoder().encodeToString(pair.getPublic().getEncoded()));
         return pair.getPublic();
     }
 
