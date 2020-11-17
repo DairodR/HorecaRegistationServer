@@ -58,7 +58,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     }
 
     @Override
-    public SecretKey enrollFacility(String cf) throws RemoteException {
+    public String enrollFacility(String cf) throws RemoteException {
         System.out.println("Enrolling facility");
         System.out.println("TEST?");
         byte[] decodedKey = Base64.getDecoder().decode(cf);
@@ -67,7 +67,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
         String encoded = null;
         try {
             cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            SecretKey secretKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+            SecretKey secretKey = new SecretKeySpec(decodedKey, 0, 128, "AES");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             encoded = Base64.getEncoder().encodeToString(cipher.doFinal(cf.getBytes("UTF-8")));
             System.out.println("KOEKE");
@@ -83,7 +83,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     }
 
     @Override
-    public SecretKey getDailyKey(String cf, SecretKey s) throws RemoteException {
+    public SecretKey getDailyKey(String cf, String s) throws RemoteException {
         System.out.println("Getting daily key");
         long timeMilli= LocalDate.now().toEpochDay();
         byte[] salt = new byte[8];
@@ -110,7 +110,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
         }
 
         md.update(key.getEncoded());
-        byte[] digest = md.digest(s.getEncoded());
+        byte[] digest = md.digest(s.getBytes());
         SecretKey mergedSecretKey = new SecretKeySpec(digest, "AES");
         System.out.println(mergedSecretKey.toString());
         return mergedSecretKey;
