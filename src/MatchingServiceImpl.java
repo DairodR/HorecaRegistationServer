@@ -14,4 +14,29 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     protected MatchingServiceImpl(int port, RMIClientSocketFactory csf, RMIServerSocketFactory ssf) throws RemoteException {
         super(port, csf, ssf);
     }
+
+    @Override
+    public void requestInfectedLogs() throws RemoteException {
+
+    }
+
+    @Override
+    public void forwardLogs() throws RemoteException {
+
+    }
+
+    @Override
+    public void submitCapsules() throws RemoteException {
+
+    }
+
+    @Override
+    public void submitAcknowledgements() throws RemoteException {
+
+    }
+
+    @Override
+    public void forwardUnacknowledgedLogs() throws RemoteException {
+
+    }
 }
