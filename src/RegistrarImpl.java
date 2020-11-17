@@ -58,32 +58,27 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     }
 
     @Override
-    public String enrollFacility(String cf) throws RemoteException {
+    public SecretKey enrollFacility(String cf) throws RemoteException {
         System.out.println("Enrolling facility");
         System.out.println("TEST?");
         byte[] decodedKey = Base64.getDecoder().decode(cf);
         System.out.println("PIJPEN");
-        Cipher cipher = null;
-        String encoded = null;
+        SecretKey secretKey= null;
         try {
-            cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            SecretKey secretKey = new SecretKeySpec(decodedKey, 0, 128, "AES");
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-            encoded = Base64.getEncoder().encodeToString(cipher.doFinal(cf.getBytes("UTF-8")));
+            KeyGenerator kf = KeyGenerator.getInstance("AES");
+            secretKey = kf.generateKey();
             System.out.println("KOEKE");
-            // System.out.println( Base64.getMimeEncoder().encodeToString( secretKey.getEncoded()));
+            System.out.println( Base64.getMimeEncoder().encodeToString( secretKey.getEncoded()));
             //            System.out.println(Base64.getMimeEncoder().encodeToString( decodedKey));
 
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | UnsupportedEncodingException | BadPaddingException | IllegalBlockSizeException e) {
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-
-
-        return encoded;
+        return secretKey;
     }
 
     @Override
-    public SecretKey getDailyKey(String cf, String s) throws RemoteException {
+    public SecretKey getDailyKey(String cf, SecretKey s) throws RemoteException {
         System.out.println("Getting daily key");
         long timeMilli= LocalDate.now().toEpochDay();
         byte[] salt = new byte[8];
@@ -110,9 +105,9 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
         }
 
         md.update(key.getEncoded());
-        byte[] digest = md.digest(s.getBytes());
+        byte[] digest = md.digest(s.getEncoded());
         SecretKey mergedSecretKey = new SecretKeySpec(digest, "AES");
-        System.out.println(mergedSecretKey.toString());
+        System.out.println(Base64.getEncoder().encodeToString(mergedSecretKey.getEncoded()));
         return mergedSecretKey;
     }
 

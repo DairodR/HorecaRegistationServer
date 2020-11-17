@@ -5,7 +5,7 @@ public class RegistrarServer {
     private void startServer() {
         try {
             // create on port 1099
-            System.setProperty("java.rmi.server.hostname","192.168.1.7");
+            System.setProperty("java.rmi.server.hostname","localhost");
             Registry registry = LocateRegistry.createRegistry(1099);
             // create a new service named Registrar
             registry.rebind("Registrar", new RegistrarImpl());

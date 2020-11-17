@@ -9,9 +9,9 @@ public interface Registrar extends Remote{
 
     void connect(UserInterface ui) throws RemoteException;
 
-    String enrollFacility(String cf) throws RemoteException;
+    SecretKey enrollFacility(String cf) throws RemoteException;
 
-    SecretKey getDailyKey(String cf, String s) throws RemoteException;
+    SecretKey getDailyKey(String cf, SecretKey s) throws RemoteException;
 
     String getDailyPseudonym(String location, SecretKey sCFDay) throws RemoteException;
 
