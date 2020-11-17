@@ -17,6 +17,16 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     }
 
     @Override
+    public void connect(CateringFacilityInterface cf) throws RemoteException {
+
+    }
+
+    @Override
+    public void connect(UserInterface ui) throws RemoteException {
+
+    }
+
+    @Override
     public void enrollFacility() throws RemoteException {
 
     }
