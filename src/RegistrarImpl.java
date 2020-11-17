@@ -19,10 +19,23 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     List<CateringFacilityInterface> cateringFacilities;
+    List<Integer> users;
+
+    KeyPair pair;
 
 
     protected RegistrarImpl() throws RemoteException {
         cateringFacilities = new ArrayList<>();
+        KeyPairGenerator keyGen=null;
+        SecureRandom random=null;
+        try {
+            keyGen = KeyPairGenerator.getInstance("DSA","SUN");
+            random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+            keyGen.initialize(1024, random);
+            pair = keyGen.generateKeyPair();
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            e.printStackTrace();
+        }
     }
 
     protected RegistrarImpl(int port) throws RemoteException {
@@ -45,13 +58,17 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
 
     @Override
     public SecretKey enrollFacility(String cf) throws RemoteException {
+        System.out.println("Enrolling facility");
         byte[] decodedKey = Base64.getDecoder().decode(cf);
         SecretKey secretKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+
+        System.out.println(secretKey.toString());
         return secretKey;
     }
 
     @Override
     public SecretKey getDailyKey(String cf, SecretKey s) throws RemoteException {
+        System.out.println("Getting daily key");
         long timeMilli= LocalDate.now().toEpochDay();
         byte[] salt = new byte[8];
         for (int i = 7; i >= 0; i--) {
@@ -79,11 +96,13 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
         md.update(key.getEncoded());
         byte[] digest = md.digest(s.getEncoded());
         SecretKey mergedSecretKey = new SecretKeySpec(digest, "AES");
+        System.out.println(mergedSecretKey.toString());
         return mergedSecretKey;
     }
 
     @Override
     public String getDailyPseudonym(String location, SecretKey sCFDay) throws RemoteException{
+        System.out.println("Getting daily pseudonym");
         long timeMilli= LocalDate.now().toEpochDay();
         byte[] day = new byte[8];
         for (int i = 7; i >= 0; i--) {
@@ -100,17 +119,48 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
         md.update(location.getBytes());
         md.update(sCFDay.getEncoded());
         byte[] digest = md.digest(day);
-
+        System.out.println(Base64.getEncoder().encodeToString(digest));
         return Base64.getEncoder().encodeToString(digest);
     }
 
     @Override
-    public void enrollUsers() throws RemoteException {
-
+    public PublicKey enrollUsers(int gsm) throws RemoteException {
+        System.out.println("Enrolling user:"+gsm);
+        users.add(gsm);
+        return pair.getPublic();
     }
 
     @Override
-    public void retrieveToken() throws RemoteException {
+    public List<byte[]> retrieveToken() throws RemoteException {
+        System.out.println("Retrieving tokens");
+        List<byte[]> tokens=new ArrayList<>();
+        for(int j=0;j<48;j++) {
+            SecureRandom random = null;
+            Signature dsa = null;
+            long timeMilli = LocalDate.now().toEpochDay();
+            byte[] day = new byte[8];
+            for (int i = 7; i >= 0; i--) {
+                day[i] = (byte) (timeMilli & 0xFF);
+                timeMilli >>= 8;
+            }
+            try {
+                random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+                dsa = Signature.getInstance("SHA1withDSA", "SUN");
 
+                dsa.initSign(pair.getPrivate());
+
+                byte[] bytes = new byte[20];
+                random.nextBytes(bytes);
+                dsa.update(bytes);
+
+                dsa.update(day);
+
+                byte[] realSig = dsa.sign();
+                tokens.add(realSig);
+            } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
+                e.printStackTrace();
+            }
+        }
+        return tokens;
     }
 }

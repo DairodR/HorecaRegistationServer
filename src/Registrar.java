@@ -1,6 +1,7 @@
 import javax.crypto.SecretKey;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.security.PublicKey;
 import java.util.List;
 
 public interface Registrar extends Remote{
@@ -14,7 +15,7 @@ public interface Registrar extends Remote{
 
     String getDailyPseudonym(String location, SecretKey sCFDay) throws RemoteException;
 
-    void enrollUsers() throws RemoteException;
+    PublicKey enrollUsers(int gsm) throws RemoteException;
 
-    void retrieveToken() throws RemoteException;
+    List<byte[]> retrieveToken() throws RemoteException;
 }
