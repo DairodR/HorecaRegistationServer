@@ -9,6 +9,8 @@ public interface Registrar extends Remote{
 
     void connect(UserInterface ui) throws RemoteException;
 
+    PublicKey connect(MixingProxy mp) throws RemoteException;
+
     SecretKey enrollFacility(String cf) throws RemoteException;
 
     SecretKey getDailyKey(String cf, SecretKey s) throws RemoteException;
@@ -17,5 +19,5 @@ public interface Registrar extends Remote{
 
     PublicKey enrollUsers(int gsm) throws RemoteException;
 
-    List<byte[]> retrieveToken() throws RemoteException;
+    List<String> retrieveToken() throws RemoteException;
 }

@@ -31,9 +31,9 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
         KeyPairGenerator keyGen=null;
         SecureRandom random=null;
         try {
-            keyGen = KeyPairGenerator.getInstance("DSA","SUN");
+            keyGen = KeyPairGenerator.getInstance("RSA");
             random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-            keyGen.initialize(1024, random);
+            keyGen.initialize(2048, random);
             pair = keyGen.generateKeyPair();
             System.out.println("pair:"+pair);
             System.out.println("publickey:"+Base64.getEncoder().encodeToString(pair.getPublic().getEncoded()));
@@ -63,6 +63,11 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     }
 
     @Override
+    public PublicKey connect(MixingProxy mp) throws RemoteException {
+        return pair.getPublic();
+    }
+
+    @Override
     public SecretKey enrollFacility(String cf) throws RemoteException {
         System.out.println("Enrolling facility");
         SecretKey secretKey= null;
@@ -70,7 +75,6 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
             SecureRandom r = new SecureRandom();
             byte[] salt = new byte[8];
             r.nextBytes(salt);
-
             char[] password = cf.toCharArray();
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             KeySpec spec = new PBEKeySpec(password, salt, 65536, 256);
@@ -150,9 +154,9 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     }
 
     @Override
-    public List<byte[]> retrieveToken() throws RemoteException {
+    public List<String> retrieveToken() throws RemoteException {
         System.out.println("Retrieving tokens");
-        List<byte[]> tokens=new ArrayList<>();
+        List<String> tokens=new ArrayList<>();
         for(int j=0;j<48;j++) {
             SecureRandom random = null;
             Signature dsa = null;
@@ -164,18 +168,22 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
             }
             try {
                 random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-                dsa = Signature.getInstance("SHA1withDSA", "SUN");
+                dsa = Signature.getInstance("SHA1WithRSA");
 
                 dsa.initSign(pair.getPrivate());
 
                 byte[] bytes = new byte[20];
                 random.nextBytes(bytes);
+
                 dsa.update(bytes);
 
                 dsa.update(day);
 
                 byte[] realSig = dsa.sign();
-                tokens.add(realSig);
+
+                String data = Base64.getEncoder().encodeToString(bytes) + ";" + Base64.getEncoder().encodeToString(realSig);
+
+                tokens.add(data);
             } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
                 e.printStackTrace();
             }
