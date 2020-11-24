@@ -166,7 +166,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
         for(Map.Entry<String, Integer> entry : allDailyPseudonyms.entrySet()){
             if(entry.getKey().startsWith(date))dailyNyms.put(entry.getValue(), entry.getKey().split(",")[1]);
         }
-
+        System.out.println("returning all daily pseudonyms: "+dailyNyms.size());
         return dailyNyms;
     }
 

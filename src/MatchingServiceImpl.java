@@ -107,7 +107,8 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                String date = d.toString();
+                String date = new SimpleDateFormat("yyyy-MM-dd").format(d);
+
                 Map<Integer, String> dailyNyms = registrar.getAllNyms(date);
 
                 MessageDigest md = null;
@@ -120,10 +121,12 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
                 md.update(unsignedLogs.get(i).split(",")[2].getBytes());
                 byte[] hash = md.digest(dailyNyms.get(Integer.parseInt(unsignedLogs.get(i).split(",")[3])).getBytes());
 
+
                 if (!Arrays.equals(hash, unsignedLogs.get(i).split(",")[1].getBytes())) allValidated = false;
             }
 
             if (allValidated) {
+                System.out.println("all logs validated");
                 for (int i = 0; i < unsignedLogs.size(); i++) {
                     StringBuilder sb = new StringBuilder();
                     sb.append(unsignedLogs.get(i).split(",")[2]);
