@@ -9,7 +9,9 @@ import java.security.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -100,14 +102,10 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
         if (allVerified) {
             boolean allValidated = true;
             for (int i = 0; i < unsignedLogs.size(); i++) {
-                DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-                Date d = null;
-                try {
-                    d = dateFormatter.parse(unsignedLogs.get(i).split(",")[unsignedLogs.size() - 1]);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                String date = new SimpleDateFormat("yyyy-MM-dd").format(d);
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+                LocalDateTime d = LocalDateTime.parse(unsignedLogs.get(i).split(",")[unsignedLogs.get(i).split(",").length - 1],dtf);
+                String date = d.format(dtf).split(" ")[0];
 
                 Map<Integer, String> dailyNyms = registrar.getAllNyms(date);
 
@@ -117,12 +115,17 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
                 } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 }
+                int randomGetal = Integer.parseInt(unsignedLogs.get(i).split(",")[3]);
 
-                md.update(unsignedLogs.get(i).split(",")[2].getBytes());
-                byte[] hash = md.digest(dailyNyms.get(Integer.parseInt(unsignedLogs.get(i).split(",")[3])).getBytes());
+                md.update(BigInteger.valueOf(randomGetal).toByteArray());
+                byte[] hash = md.digest(dailyNyms.get(randomGetal).getBytes());
 
+                String generatedHash=Base64.getEncoder().encodeToString(hash);
+                String givenHash = unsignedLogs.get(i).split(",")[2];
+                System.out.println("generated hash: "+generatedHash);
+                System.out.println("given hash: "+givenHash);
 
-                if (!Arrays.equals(hash, unsignedLogs.get(i).split(",")[1].getBytes())) allValidated = false;
+                if (!generatedHash.equals(givenHash)) allValidated = false;
             }
 
             if (allValidated) {
@@ -158,23 +161,36 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     public void addUninformedTokens(){
         for(String s : critical){
             String hash = s.split(",")[0];
+            System.out.println(capsules.size());
             for(String capsule:capsules){
+                System.out.println(capsule);
                 if(hash.equals(capsule.split(",")[2])){
-                    DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    Date begin1 = null;
-                    Date eind1 = null;
-                    Date begin2 = null;
-                    Date eind2 = null;
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-                    try {
-                        begin1 = dateFormatter.parse(s.split(",")[1]);
-                        eind1 = dateFormatter.parse(s.split(",")[2]);
-                        begin2 = dateFormatter.parse(capsule.split(",")[0]);
-                        eind2 = dateFormatter.parse(capsule.split(",")[capsule.split(",").length-1]);
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+                    LocalDateTime begin1 = LocalDateTime.parse(s.split(",")[1],dtf);
+                    System.out.println("begin 1: "+begin1.toString());
+
+                    LocalDateTime eind1 = LocalDateTime.parse(s.split(",")[2],dtf);
+                    System.out.println("eind 1: "+eind1.toString());
+
+                    List<LocalDateTime> capsuleAanwezig = new ArrayList<>();
+
+                    LocalDateTime begin2 = LocalDateTime.parse(capsule.split(",")[0],dtf);
+                    System.out.println("begin 2: "+begin2.toString());
+                    capsuleAanwezig.add(begin2);
+
+                    for(int i=3; i<capsule.split(",").length;i++){
+                        LocalDateTime aanwezig = LocalDateTime.parse(capsule.split(",")[0],dtf);
+                        System.out.println("nog steeds aanwezig: "+aanwezig.toString());
+                        capsuleAanwezig.add(aanwezig);
                     }
-                    if(begin1.before(eind2) && begin2.before(eind1))uninformedTokens.add(capsule.split(",")[1].getBytes());
+
+                    for(LocalDateTime d :capsuleAanwezig) {
+                        if (begin1.isBefore(d) && eind1.isAfter(d)){
+                            uninformedTokens.add(capsule.split(",")[1].getBytes());
+                            break;
+                        }
+                    }
                 }
             }
         }

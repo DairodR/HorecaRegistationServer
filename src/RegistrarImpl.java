@@ -8,6 +8,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import java.security.*;
@@ -150,7 +151,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
 
     @Override
     public void setDailyNym(int rand, String dailyNym) throws RemoteException {
-        String date = LocalDate.now().toString();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String date = LocalDateTime.now().format(dtf);
 
         StringBuilder sb = new StringBuilder();
         sb.append(date);
