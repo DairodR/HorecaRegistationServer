@@ -22,7 +22,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
 
     KeyPair pair;
 
-    Map<String, Integer> allDailyPseudonyms;
+    Map<String, Integer> allDailyPseudonyms = new HashMap<>();
 
 
     protected RegistrarImpl() throws RemoteException {
