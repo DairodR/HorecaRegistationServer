@@ -17,7 +17,7 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     PublicKey mixingServiceKey = null;
     Set<String> capsules;
 
-    Map<Integer, PublicKey> doctorKeys;
+    Map<Integer, PublicKey> doctorKeys = new HashMap<>();
 
     Registry myRegistry;
     Registrar registrar;
@@ -90,7 +90,7 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
 
                 dsa.initVerify(key);
 
-                dsa.update(Base64.getDecoder().decode(unsignedLogs.get(i)));
+                dsa.update(unsignedLogs.get(i).getBytes());
                 if (!dsa.verify(signedLogs.get(i))) allVerified = false;
             }
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
@@ -118,7 +118,7 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
                 }
 
                 md.update(unsignedLogs.get(i).split(",")[2].getBytes());
-                byte[] hash = md.digest(dailyNyms.get(Integer.parseInt(unsignedLogs.get(i).split(",")[2])).getBytes());
+                byte[] hash = md.digest(dailyNyms.get(Integer.parseInt(unsignedLogs.get(i).split(",")[3])).getBytes());
 
                 if (!Arrays.equals(hash, unsignedLogs.get(i).split(",")[1].getBytes())) allValidated = false;
             }
@@ -126,14 +126,14 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
             if (allValidated) {
                 for (int i = 0; i < unsignedLogs.size(); i++) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append(unsignedLogs.get(i).split(",")[1]);
+                    sb.append(unsignedLogs.get(i).split(",")[2]);
                     sb.append(",");
-                    sb.append(unsignedLogs.get(i).split(",")[3]);
+                    sb.append(unsignedLogs.get(i).split(",")[0]);
                     sb.append(",");
                     sb.append(unsignedLogs.get(i).split(",")[4]);
 
                     critical.add(sb.toString());
-                    informedTokens.add(unsignedLogs.get(i).split(",")[0].getBytes());
+                    informedTokens.add(unsignedLogs.get(i).split(",")[1].getBytes());
                 }
             }
         }
