@@ -7,12 +7,10 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import java.security.*;
-import java.util.Base64;
 import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -23,6 +21,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
     List<Integer> users;
 
     KeyPair pair;
+
+    Map<String, Integer> allDailyPseudonyms;
 
 
     protected RegistrarImpl() throws RemoteException {
@@ -64,6 +64,11 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
 
     @Override
     public PublicKey connect(MixingProxy mp) throws RemoteException {
+        return pair.getPublic();
+    }
+
+    @Override
+    public PublicKey connect(MatchingService ms) throws RemoteException {
         return pair.getPublic();
     }
 
@@ -141,6 +146,28 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
         byte[] digest = md.digest(day);
         System.out.println(Base64.getEncoder().encodeToString(digest));
         return Base64.getEncoder().encodeToString(digest);
+    }
+
+    @Override
+    public void setDailyNym(int rand, String dailyNym) throws RemoteException {
+        String date = LocalDate.now().toString();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(date);
+        sb.append(",");
+        sb.append(dailyNym);
+        allDailyPseudonyms.put(sb.toString(),rand);
+    }
+
+    @Override
+    public Map<Integer, String> getAllNyms(String date) throws RemoteException {
+        Map<Integer,String> dailyNyms = new HashMap<>();
+
+        for(Map.Entry<String, Integer> entry : allDailyPseudonyms.entrySet()){
+            if(entry.getKey().startsWith(date))dailyNyms.put(entry.getValue(), entry.getKey().split(",")[1]);
+        }
+
+        return dailyNyms;
     }
 
     @Override
