@@ -131,8 +131,6 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy{
         }
 
         try {
-            System.out.println("signed data:" + token.split(";")[1] + token.split(";")[1].getBytes().length);
-            System.out.println("unsigned data:" + token.split(";")[0] + token.split(";")[0].getBytes().length);
             dsa = Signature.getInstance("SHA1WithRSA");
 
             dsa.initVerify(registrarKey);
@@ -144,7 +142,6 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy{
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
             e.printStackTrace();
         }
-        System.out.println(used +" "+ verified);
         return !used && verified;
     }
     public PublicKey getPublicKey(){

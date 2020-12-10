@@ -17,13 +17,14 @@ public class MixingProxyServer {
             MixingProxyImpl mp =  new MixingProxyImpl();
             registry.rebind("MixingProxy", mp);
 
+            mp.connectToServer();
+
             LocalTime midnight = LocalTime.MIDNIGHT;
             LocalDate today = LocalDate.now();
             LocalDateTime localDateTime = LocalDateTime.of(today,midnight);
             Timer timer = new Timer();
             timer.schedule(new TimedTaskDailyMixingProxy(mp), Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant()), 86400000);
 
-            mp.connectToServer();
         } catch (Exception e) {
             e.printStackTrace();
         }
