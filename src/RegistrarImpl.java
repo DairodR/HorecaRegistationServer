@@ -1,5 +1,3 @@
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
 import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
@@ -218,5 +216,13 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
             }
         }
         return tokens;
+    }
+
+    @Override
+    public void sendUnacknowledgedTokens(List<String> tokens) {
+        System.out.println("unacknowledged tokens received:");
+        for (String s : tokens){
+            System.out.println(s);
+        }
     }
 }

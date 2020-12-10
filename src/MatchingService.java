@@ -9,13 +9,13 @@ public interface MatchingService extends Remote {
 
     void connect(DoctorInterface d) throws RemoteException;
 
-    void requestInfectedLogs() throws RemoteException;
+    List<String> requestInfectedLogs() throws RemoteException;
 
     void forwardLogs(int id, List<String> unsignedLogs, List<byte[]> signedLogs) throws RemoteException;
 
     void submitCapsules(List<String> capsules) throws RemoteException;
 
-    void submitAcknowledgements() throws RemoteException;
+    void submitAcknowledgements(List<String> tokens) throws RemoteException;
 
-    void forwardUnacknowledgedLogs() throws RemoteException;
+    void forwardUnacknowledgedTokens() throws RemoteException;
 }

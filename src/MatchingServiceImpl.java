@@ -6,11 +6,6 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -26,8 +21,8 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     PublicKey registrarKey = null;
 
     List<String> critical;
-    List<byte[]> informedTokens;
-    List<byte[]> uninformedTokens;
+    List<String> informedTokens;
+    List<String> uninformedTokens;
 
 
 
@@ -76,8 +71,8 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     }
 
     @Override
-    public void requestInfectedLogs() throws RemoteException {
-
+    public List<String> requestInfectedLogs() throws RemoteException {
+        return critical;
     }
 
     @Override
@@ -107,7 +102,11 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
                 LocalDateTime d = LocalDateTime.parse(unsignedLogs.get(i).split(",")[unsignedLogs.get(i).split(",").length - 1],dtf);
                 String date = d.format(dtf).split(" ")[0];
 
+                System.out.println(date);
+
                 Map<Integer, String> dailyNyms = registrar.getAllNyms(date);
+
+
 
                 MessageDigest md = null;
                 try {
@@ -117,11 +116,14 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
                 }
                 int randomGetal = Integer.parseInt(unsignedLogs.get(i).split(",")[3]);
 
+                System.out.println(randomGetal+":"+dailyNyms.get(randomGetal));
+
                 md.update(BigInteger.valueOf(randomGetal).toByteArray());
                 byte[] hash = md.digest(dailyNyms.get(randomGetal).getBytes());
 
                 String generatedHash=Base64.getEncoder().encodeToString(hash);
                 String givenHash = unsignedLogs.get(i).split(",")[2];
+
                 System.out.println("generated hash: "+generatedHash);
                 System.out.println("given hash: "+givenHash);
 
@@ -139,7 +141,7 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
                     sb.append(unsignedLogs.get(i).split(",")[4]);
 
                     critical.add(sb.toString());
-                    informedTokens.add(unsignedLogs.get(i).split(",")[1].getBytes());
+                    informedTokens.add(unsignedLogs.get(i).split(",")[1].split(";")[1]);
                 }
             }
         }
@@ -149,12 +151,12 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
             System.out.println(s);
         }
         System.out.println("informedTokens");
-        for(byte[] token : informedTokens){
-            System.out.println(Base64.getEncoder().encodeToString(token));
+        for(String token : informedTokens){
+            System.out.println(token);
         }
         System.out.println("uninformedTokens");
-        for(byte[] token : uninformedTokens){
-            System.out.println(Base64.getEncoder().encodeToString(token));
+        for(String token : uninformedTokens){
+            System.out.println(token);
         }
     }
 
@@ -187,7 +189,7 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
 
                     for(LocalDateTime d :capsuleAanwezig) {
                         if (begin1.isBefore(d) && eind1.isAfter(d)){
-                            uninformedTokens.add(capsule.split(",")[1].getBytes());
+                            uninformedTokens.add(capsule.split(",")[1].split(";")[1]);
                             break;
                         }
                     }
@@ -203,12 +205,35 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     }
 
     @Override
-    public void submitAcknowledgements() throws RemoteException {
+    public void submitAcknowledgements(List<String> tokens) throws RemoteException {
+        System.out.println("informedTokens");
+        for(String token : informedTokens){
+            System.out.println(token);
+        }
+        System.out.println("uninformedTokens");
+        for(String token : uninformedTokens){
+            System.out.println(token);
+        }
 
+        for(String s : tokens){
+            System.out.println(s);
+            uninformedTokens.remove(s);
+            if(!informedTokens.contains(s))informedTokens.add(s);
+        }
+
+        System.out.println("informedTokens");
+        for(String token : informedTokens){
+            System.out.println(token);
+        }
+        System.out.println("uninformedTokens");
+        for(String token : uninformedTokens){
+            System.out.println(token);
+        }
     }
 
     @Override
-    public void forwardUnacknowledgedLogs() throws RemoteException {
+    public void forwardUnacknowledgedTokens() throws RemoteException {
+        registrar.sendUnacknowledgedTokens(uninformedTokens);
 
     }
 }

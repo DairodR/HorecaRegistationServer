@@ -1,11 +1,11 @@
 import java.rmi.RemoteException;
 import java.util.TimerTask;
 
-public class TimedTaskDaily extends TimerTask {
+public class TimedTaskDailyMixingProxy extends TimerTask {
 
     MixingProxyImpl mp;
 
-    public TimedTaskDaily(MixingProxyImpl m) {
+    public TimedTaskDailyMixingProxy(MixingProxyImpl m) {
         mp = m;
     }
 

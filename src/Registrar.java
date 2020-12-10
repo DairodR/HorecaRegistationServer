@@ -28,4 +28,6 @@ public interface Registrar extends Remote{
     void setDailyNym(int rand, String dailyNym) throws RemoteException;
 
     Map<Integer,String> getAllNyms(String date) throws RemoteException;
+
+    void sendUnacknowledgedTokens(List<String> tokens) throws RemoteException;
 }

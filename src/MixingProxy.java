@@ -1,6 +1,7 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.security.PublicKey;
+import java.util.List;
 
 public interface MixingProxy extends Remote {
     void connectToServer() throws RemoteException;
@@ -9,11 +10,9 @@ public interface MixingProxy extends Remote {
 
     void continueVisit(String capsule) throws RemoteException;
 
-    void acknowledge() throws RemoteException;
+    void acknowledge(List<String> token) throws RemoteException;
 
     void submitCapsules() throws RemoteException;
-
-    void submitAcknowledgements() throws RemoteException;
 
     PublicKey getPublicKey() throws RemoteException;
 

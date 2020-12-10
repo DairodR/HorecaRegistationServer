@@ -11,7 +11,6 @@ import java.util.*;
 public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy{
     List<String> capsules;
     PublicKey registrarKey = null;
-    PublicKey matchingServiceKey = null;
 
     Registry myRegistry;
     Registrar registrar;
@@ -95,14 +94,14 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy{
             String s = capsules.get(i);
             if(capsule.split(",")[1].equals(s.split(",")[1])){
                 capsules.remove(s);
-                capsules.add(s.concat(capsule.split(",")[0]));
+                capsules.add(s.concat(","+capsule.split(",")[0]));
             }
         }
     }
 
     @Override
-    public void acknowledge() throws RemoteException {
-
+    public void acknowledge(List<String> token) throws RemoteException {
+        matchingService.submitAcknowledgements(token);
     }
 
     @Override
@@ -110,11 +109,7 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy{
         List<String> random = new ArrayList<>(capsules);
         Collections.shuffle(random);
         matchingService.submitCapsules(random);
-    }
-
-    @Override
-    public void submitAcknowledgements() throws RemoteException {
-
+        capsules.clear();
     }
 
     public boolean checkTokenValid(String token){
@@ -122,7 +117,10 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy{
         boolean used = false;
         boolean verified = false;
         for(String s : capsules){
-            if(s.split(",")[1].equals(token))used = true;
+            if (s.split(",")[1].equals(token)) {
+                used = true;
+                break;
+            }
         }
 
         long timeMilli = LocalDate.now().toEpochDay();
