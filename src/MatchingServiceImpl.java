@@ -94,7 +94,6 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
             e.printStackTrace();
         }
 
-        System.out.println("hallo"+allVerified);
         if (allVerified) {
             boolean allValidated = true;
             for (int i = 0; i < unsignedLogs.size(); i++) {
@@ -128,7 +127,6 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
 
                 if (!generatedHash.equals(givenHash)) allValidated = false;
             }
-System.out.println("hallo2"+allValidated);
             if (allValidated) {
                 System.out.println("all logs validated");
                 for (int i = 0; i < unsignedLogs.size(); i++) {

@@ -82,7 +82,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements Registrar {
             char[] password = cf.toCharArray();
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             KeySpec spec = new PBEKeySpec(password, salt, 65536, 256);
-             secretKey = factory.generateSecret(spec);
+            secretKey = factory.generateSecret(spec);
             System.out.println( Base64.getMimeEncoder().encodeToString( secretKey.getEncoded()));
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             e.printStackTrace();
