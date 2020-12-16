@@ -152,4 +152,9 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingProxy{
         submitCapsules();
         capsules.clear();
     }
+
+    @Override
+    public void flushCapsules() throws RemoteException {
+        this.submitCapsules();
+    }
 }

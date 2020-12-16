@@ -17,4 +17,6 @@ public interface MixingProxy extends Remote {
     PublicKey getPublicKey() throws RemoteException;
 
     void clearData()throws RemoteException;
+
+    void flushCapsules() throws RemoteException;
 }

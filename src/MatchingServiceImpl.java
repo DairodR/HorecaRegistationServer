@@ -94,6 +94,7 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
             e.printStackTrace();
         }
 
+        System.out.println("hallo"+allVerified);
         if (allVerified) {
             boolean allValidated = true;
             for (int i = 0; i < unsignedLogs.size(); i++) {
@@ -105,8 +106,6 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
                 System.out.println(date);
 
                 Map<Integer, String> dailyNyms = registrar.getAllNyms(date);
-
-
 
                 MessageDigest md = null;
                 try {
@@ -129,7 +128,7 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
 
                 if (!generatedHash.equals(givenHash)) allValidated = false;
             }
-
+System.out.println("hallo2"+allValidated);
             if (allValidated) {
                 System.out.println("all logs validated");
                 for (int i = 0; i < unsignedLogs.size(); i++) {
@@ -140,8 +139,8 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
                     sb.append(",");
                     sb.append(unsignedLogs.get(i).split(",")[4]);
 
-                    critical.add(sb.toString());
-                    informedTokens.add(unsignedLogs.get(i).split(",")[1].split(";")[1]);
+                    addCritical(sb.toString());
+                    addInformedToken(unsignedLogs.get(i).split(",")[1].split(";")[1]);
                 }
             }
         }
@@ -189,7 +188,7 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
 
                     for(LocalDateTime d :capsuleAanwezig) {
                         if (begin1.isBefore(d) && eind1.isAfter(d)){
-                            uninformedTokens.add(capsule.split(",")[1].split(";")[1]);
+                            addUninformedToken(capsule.split(",")[1].split(";")[1]);
                             break;
                         }
                     }
@@ -206,19 +205,11 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
 
     @Override
     public void submitAcknowledgements(List<String> tokens) throws RemoteException {
-        System.out.println("informedTokens");
-        for(String token : informedTokens){
-            System.out.println(token);
-        }
-        System.out.println("uninformedTokens");
-        for(String token : uninformedTokens){
-            System.out.println(token);
-        }
-
         for(String s : tokens){
+            System.out.println("Acknowledgement received for token:");
             System.out.println(s);
             uninformedTokens.remove(s);
-            if(!informedTokens.contains(s))informedTokens.add(s);
+            addInformedToken(s);
         }
 
         System.out.println("informedTokens");
@@ -236,4 +227,20 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
         registrar.sendUnacknowledgedTokens(uninformedTokens);
 
     }
+    public void addCritical(String s){
+        if(!critical.contains(s)){
+            critical.add(s);
+        }
+    }
+    public void addInformedToken(String s){
+        if (!informedTokens.contains(s)){
+            informedTokens.add(s);
+        }
+    }
+    public void addUninformedToken(String s){
+        if (!uninformedTokens.contains(s)){
+            uninformedTokens.add(s);
+        }
+    }
+
 }
